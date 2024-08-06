@@ -17,7 +17,7 @@ By leveraging the capabilities of the Fastdup library, we aim to enhance the cap
 
 ## Dataset
 
-We conducted the experiments on the MVTec Anomaly Detection benchmark, a renowned dataset in the anomaly detection and localization field. MVTec AD contains 10 object categories from manufacturing with a total of 5354 images. The dataset is composed of normal images for training and both normal and anomaly images with various types of defects for testing. It also provides pixel-level annotations for defective test images.
+We conducted the experiments on the [MVTec Anomaly Detection benchmark](https://www.mvtec.com/company/research/datasets/mvtec-ad/downloads), a renowned dataset in the anomaly detection and localization field. MVTec AD contains 10 object categories from manufacturing with a total of 5354 images. The dataset is composed of normal images for training and both normal and anomaly images with various types of defects for testing. It also provides pixel-level annotations for defective test images.
 
 <p align="center">
   <img src="https://github.com/EN555/EN555.github.io/raw/main/images/006.png" alt="Image 006" width="200" />
