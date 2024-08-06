@@ -37,12 +37,12 @@ The dataset also includes images with defects.
 
 ---
 
-## Code
+## Implementation
 Below are the main parts of the code used in our segment-level anomaly detection system.
 
 #### Setting Up the Environment
 
-We start by importing the necessary libraries.
+We start by importing all necessary libraries. These include `os` and `shutil` for file operations, `ipywidgets` for creating interactive widgets within Jupyter Notebook, `IPython.display` for displaying images and HTML content, `PIL` for image processing, `fastdup` for detecting outliers, `contextlib` for handling output redirection, and `uuid` for generating unique directory names.
 
 ```pyhton
 import os
@@ -54,18 +54,24 @@ from io import BytesIO
 import fastdup
 import sys
 import contextlib
+import uuid  # To generate a unique directory name
 ```
 
 #### Creating Interactive Widgets
 
+This part creates the user interface elements. We define the title, description, file upload widget, slider for specifying the number of parts, an output area to display results, and a loading message widget.
+
+
 ```pyhton
-# Create widgets
-title = widgets.HTML(value="<h2 style='color: #2E86C1;'>Image Outlier Detection</h2>")
-description = widgets.HTML(value="<p style='font-size: 16px;'>You can load an image with an outlier, and the model will return the segment with the outlier:</p>")
-file_upload = widgets.FileUpload(accept='image/*', multiple=False, style={'description_width': 'initial'})
-num_parts = widgets.IntSlider(value=7, min=1, max=10, step=1, description='Num Parts:', style={'description_width': 'initial'})
-output = widgets.Output()
-loading_message = widgets.Label(value="")
+# Create widgets for the UI
+def create_widgets():
+    title = widgets.HTML(value="<h2 style='color: #2E86C1;'>Image Outlier Detection</h2>")
+    description = widgets.HTML(value="<p style='font-size: 16px;'>You can load an image with an outlier, and the model will return the segment with the outlier:</p>")
+    file_upload = widgets.FileUpload(accept='image/*', multiple=False, style={'description_width': 'initial'})
+    num_parts = widgets.IntSlider(value=7, min=1, max=10, step=1, description='Num Parts:', style={'description_width': 'initial'})
+    output = widgets.Output()
+    loading_message = widgets.Label(value="")
+    return title, description, file_upload, num_parts, output, loading_message
 ```
 
 #### Segmenting the Image
@@ -75,100 +81,109 @@ We define a function to divide the uploaded image into segments. This function c
 ```pyhton
 # Function to divide an image into a specified number of parts and return segments with coordinates
 def divide_image_with_coordinates(image, num_parts):
-    # Get the width and height of the image
     img_width, img_height = image.size
-    # Initialize an empty list to store the segments and their coordinates
     segments = []
-    # Calculate the width and height of each segment
     part_width = img_width // num_parts
     part_height = img_height // num_parts
     
-    # Loop through the number of parts vertically
     for y in range(num_parts):
-        # Loop through the number of parts horizontally
         for x in range(num_parts):
-            # Calculate the left, upper, right, and lower coordinates for each segment
             left = x * part_width
             upper = y * part_height
             right = (x + 1) * part_width if (x + 1) * part_width < img_width else img_width
             lower = (y + 1) * part_height if (y + 1) * part_height < img_height else img_height
-            # Crop the image to create the segment
             segment = image.crop((left, upper, right, lower))
-            # Append the segment and its coordinates to the list
             segments.append((segment, (left, upper, right, lower)))
     
-    # Return the list of segments and their coordinates
     return segments
 ```
 
-#### Handling File Uploads and Processing
+#### Saving Image Segments
 
-The `on_file_upload` function processes the uploaded image. It segments the image, saves the segments to a temporary directory, runs Fastdup to detect outliers, and draws rectangles around the outliers on the original image.
+This function saves the image segments to a temporary directory. It first clears the directory if it exists, then saves each segment.
 
 ```python
-# Define file upload event handler
-def on_file_upload(change):
-    with output:
-        output.clear_output()
-        loading_message.value = "Processing the image, please wait..."
-        display(loading_message)
-        
-        for name, file_info in file_upload.value.items():
-            # Display the uploaded image
-            img = PILImage.open(BytesIO(file_info['content']))
-            
-            # Segment the image
-            segments_with_coords = divide_image_with_coordinates(img, num_parts.value)
-            
-            # Create a temporary directory to save segments
-            temp_dir = '/content/drive/MyDrive/Colab Notebooks/temp_segments'
-            if os.path.exists(temp_dir):
-                shutil.rmtree(temp_dir)
-            os.makedirs(temp_dir)
-            
-            # Save segments to temporary directory
-            segment_files = []
-            for i, (segment, (left, upper, right, lower)) in enumerate(segments_with_coords):
-                segment_file = os.path.join(temp_dir, f"segment_{i}.png")
-                segment.save(segment_file)
-                segment_files.append(segment_file)
-            
-            # Run fastdup to detect outliers with suppressed output
-            with contextlib.redirect_stdout(open(os.devnull, 'w')), contextlib.redirect_stderr(open(os.devnull, 'w')):
-                fd = fastdup.create(input_dir=temp_dir)
-                fd.run(overwrite=True)
-            
-            # Get the outliers
-            outliers_df = fd.outliers()
-            outlier_files = set(outliers_df['filename_outlier'].values) if not outliers_df.empty else set()
-
-            # Draw rectangles around outliers on the original image
-            draw = ImageDraw.Draw(img)
-            for i, (segment, (left, upper, right, lower)) in enumerate(segments_with_coords):
-                segment_file = f"segment_{i}.png"
-                for outlier_file in outlier_files:
-                    if segment_file in outlier_file:
-                        draw.rectangle([left, upper, right, lower], outline="red", width=5)
-                        print(f"Outlier detected: {segment_file}")  # Debug: Print if the segment is an outlier
-            
-            # Remove the loading message
-            loading_message.value = ""
-            
-            # Display the original image with outliers highlighted
-            img_display_with_outliers = BytesIO()
-            img.save(img_display_with_outliers, format='PNG')
-            display(Image(data=img_display_with_outliers.getvalue()))
+# Function to save segments to a temporary directory
+def save_segments(segments_with_coords, temp_dir):
+    if os.path.exists(temp_dir):
+        shutil.rmtree(temp_dir)  # Remove the temporary directory if it exists
+    os.makedirs(temp_dir)  # Create a new temporary directory
+    
+    segment_files = []
+    for i, (segment, (left, upper, right, lower)) in enumerate(segments_with_coords):
+        segment_file = os.path.join(temp_dir, f"segment_{i}.png")
+        segment.save(segment_file)  # Save each segment
+        segment_files.append(segment_file)
+    
+    return segment_files
 ```
 
-#### Displaying the User Interface
+#### Running Fastdup and Getting Outliers
 
-Finally, we arrange all the widgets in a vertical box layout and display them.
-
+This function runs the `fastdup` library on the saved segments to detect outliers. It suppresses the output to avoid cluttering the display.
 
 ```python
+# Function to run fastdup and get outliers
+def run_fastdup_and_get_outliers(temp_dir):
+    with contextlib.redirect_stdout(open(os.devnull, 'w')), contextlib.redirect_stderr(open(os.devnull, 'w')):
+        fd = fastdup.create(input_dir=temp_dir)
+        fd.run(overwrite=True)
+    outliers_df = fd.outliers()
+    outlier_files = set(outliers_df['filename_outlier'].values) if not outliers_df.empty else set()
+    return outlier_files
+```
+
+#### Drawing Rectangles Around Outliers
+
+This function draws rectangles around the detected outliers on the original image, making it easy to visualize the anomalies.
+
+```python
+# Function to draw rectangles around detected outliers on the original image
+def draw_outliers_on_image(img, segments_with_coords, outlier_files):
+    draw = ImageDraw.Draw(img)
+    outlier_basenames = {os.path.basename(outlier_file) for outlier_file in outlier_files}
+    for i, (segment, (left, upper, right, lower)) in enumerate(segments_with_coords):
+        segment_file = f"segment_{i}.png"
+        if segment_file in outlier_basenames:
+            draw.rectangle([left, upper, right, lower], outline="red", width=5)
+    return img
+```
+#### Handling File Uploads
+
+This function handles the file upload event. It processes the uploaded image, segments it according to the specified number of parts, saves the segments, runs `fastdup` to detect outliers, and highlights the detected outliers on the original image.
+```python
+# File upload event handler
+def on_file_upload(change):
+    with output:
+        output.clear_output()  # Clear previous outputs
+        loading_message.value = "Processing the image, please wait..."
+        display(loading_message)  # Show loading message
+        
+        for name, file_info in file_upload.value.items():
+            img = PILImage.open(BytesIO(file_info['content']))  # Process the uploaded image
+            segments_with_coords = divide_image_with_coordinates(img, num_parts.value)
+            temp_dir = f"/tmp/temp_segments_{uuid.uuid4()}"
+            save_segments(segments_with_coords, temp_dir)
+            outlier_files = run_fastdup_and_get_outliers(temp_dir)
+            img_with_outliers = draw_outliers_on_image(img, segments_with_coords, outlier_files)
+            
+            loading_message.value = ""  # Remove loading message
+            
+            img_display_with_outliers = BytesIO()
+            img_with_outliers.save(img_display_with_outliers, format='PNG')
+            display(Image(data=img_display_with_outliers.getvalue()))  # Display the original image with outliers highlighted
+```
+
+#### Creating and Displaying the UI
+
+Finally, we set up and display the user interface. The file upload widget is observed for changes, and all the widgets are arranged in a vertical box layout for display.
+
+```python
+# Create and display UI
+title, description, file_upload, num_parts, output, loading_message = create_widgets()
+
 file_upload.observe(on_file_upload, names='value')
 
-# Arrange widgets in a layout
 ui = widgets.VBox([
     title,
     description,
@@ -177,9 +192,9 @@ ui = widgets.VBox([
     output
 ])
 
-# Display the UI
 display(ui)
 ```
+
 
 ## Results
 
