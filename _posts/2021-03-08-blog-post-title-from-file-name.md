@@ -11,7 +11,7 @@ In today's data-driven world, the ability to automatically detect and localize a
 
 **In this work, we focus on segment-level anomaly detection. By analyzing smaller regions within an image, we can pinpoint anomalies that might be overlooked when considering the entire image.**
 
-By leveraging the capabilities of the <img src="https://github.com/EN555/EN555.github.io/blob/main/images/visual_layer.png" alt="Fastdup Icon" width="50" height="50"> Fastdup library, we aim to enhance the capability of anomaly detection systems to operate at a finer granularity, delivering better insights and outcomes across various domains.
+By leveraging the capabilities of the Fastdup library, we aim to enhance the capability of anomaly detection systems to operate at a finer granularity, delivering better insights and outcomes across various domains.
 
 ---
 
