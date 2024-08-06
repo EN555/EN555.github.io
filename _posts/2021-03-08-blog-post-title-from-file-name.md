@@ -1,4 +1,4 @@
-## Blog Post Title From First Header
+## Localize Anomaly Detection
 
 Due to a plugin called `jekyll-titles-from-headings` which is supported by GitHub Pages by default. The above header (in the markdown file) will be automatically used as the pages title.
 
@@ -8,7 +8,35 @@ This is a sample blog post. You can talk about all sorts of fun things here.
 
 ---
 
-### This is a header
+### Dataset
+
+We conduct the experiments on the MVTec Anomaly Detection benchmark, that is, a famous dataset in the anomaly detection and localization field. MVTec AD
+contains 5 texture and 10 object categories stemming from manufacturing with a total of 5354 images. The dataset
+is composed of normal images for training and both normal and anomaly images with various types of defect for
+test. It also provides pixel-level annotations for defective test images.
+
+<p align="center">
+  <img src="https://github.com/EN555/EN555.github.io/raw/main/images/006.png" alt="Image 006" width="200" />
+  <img src="https://github.com/EN555/EN555.github.io/raw/main/images/037.png" alt="Image 037" width="200" />
+  <img src="https://github.com/EN555/EN555.github.io/raw/main/images/263.png" alt="Image 263" width="200" />
+</p>
+
+In this dataset they too proveide defective images.
+
+<p align="center">
+  <img src="https://github.com/EN555/EN555.github.io/raw/main/images/007.png" alt="Image 007" width="200" />
+  <img src="https://github.com/EN555/EN555.github.io/raw/main/images/024.png" alt="Image 024" width="200" />
+  <img src="https://github.com/EN555/EN555.github.io/raw/main/images/016.png" alt="Image 016" width="200" />
+</p>
+
+---
+
+<p align="center">
+  <img src="https://github.com/EN555/EN555.github.io/raw/main/images/007-defect.png" alt="Image 007" width="200" />
+  <img src="https://github.com/EN555/EN555.github.io/raw/main/images/024-defect.png" alt="Image 024" width="200" />
+  <img src="https://github.com/EN555/EN555.github.io/raw/main/images/016-defect.png" alt="Image 016" width="200" />
+</p>
+
 
 #### Some T-SQL Code
 
