@@ -35,7 +35,24 @@ The dataset also includes images with defects.
 
 **The last three images are examples of defective images.**
 
----
+
+## Method
+
+In this project, we utilize a segment-level anomaly detection approach to identify outliers within an image. The method involves several key steps:
+
+1. **Image Segmentation**: 
+   - The uploaded image is divided into smaller segments based on the specified number of parts. Here, "parts" refers to the grid divisions of the image; for example, if the image is divided into 4 parts, it will be split into a 2x2 grid. The number of parts can be adjusted according to the desired granularity of the segmentation.
+   - This segmentation is achieved using a function that calculates the dimensions of each part and crops the image accordingly. By breaking down the image into smaller parts, we can focus on detecting anomalies in localized regions, which is more precise than evaluating the entire image as a whole.
+
+2. **Saving Image Segments**: 
+   - Each segment is saved as a separate image file in a temporary directory. This organization is crucial for the subsequent analysis.
+
+3. **Anomaly Detection with Fastdup**:
+   - The `fastdup` library is employed to detect outliers among the saved image segments. 
+   - The library processes the segments, compares them, and identifies which segments are outliers based on their visual characteristics.
+
+4. **Highlighting Outliers**: 
+   - Once the outliers are detected, the original image is revisited, and rectangles are drawn around the segments identified as anomalies. This visual representation helps in easily locating the problematic areas within the image.
 
 ## Implementation
 Below are the main parts of the code used in our segment-level anomaly detection system.
@@ -68,10 +85,12 @@ def create_widgets():
     title = widgets.HTML(value="<h2 style='color: #2E86C1;'>Image Outlier Detection</h2>")
     description = widgets.HTML(value="<p style='font-size: 16px;'>You can load an image with an outlier, and the model will return the segment with the outlier:</p>")
     file_upload = widgets.FileUpload(accept='image/*', multiple=False, style={'description_width': 'initial'})
+    # Create an IntSlider widget to allow the user to specify the number of parts to divide the image into
     num_parts = widgets.IntSlider(value=7, min=1, max=10, step=1, description='Num Parts:', style={'description_width': 'initial'})
     output = widgets.Output()
     loading_message = widgets.Label(value="")
     return title, description, file_upload, num_parts, output, loading_message
+
 ```
 
 #### Segmenting the Image
@@ -81,19 +100,19 @@ We define a function to divide the uploaded image into segments. This function c
 ```pyhton
 # Function to divide an image into a specified number of parts and return segments with coordinates
 def divide_image_with_coordinates(image, num_parts):
-    img_width, img_height = image.size
+    img_width, img_height = image.size  # Get the width and height of the image
     segments = []
-    part_width = img_width // num_parts
-    part_height = img_height // num_parts
+    part_width = img_width // num_parts  # Calculate the width of each part
+    part_height = img_height // num_parts  # Calculate the height of each part
     
     for y in range(num_parts):
         for x in range(num_parts):
-            left = x * part_width
-            upper = y * part_height
-            right = (x + 1) * part_width if (x + 1) * part_width < img_width else img_width
-            lower = (y + 1) * part_height if (y + 1) * part_height < img_height else img_height
-            segment = image.crop((left, upper, right, lower))
-            segments.append((segment, (left, upper, right, lower)))
+            left = x * part_width  # Calculate the left coordinate of the part
+            upper = y * part_height  # Calculate the upper coordinate of the part
+            right = (x + 1) * part_width if (x + 1) * part_width < img_width else img_width  # Calculate the right coordinate
+            lower = (y + 1) * part_height if (y + 1) * part_height < img_height else img_height  # Calculate the lower coordinate
+            segment = image.crop((left, upper, right, lower))  # Crop the image to create the segment
+            segments.append((segment, (left, upper, right, lower)))  # Append the segment and its coordinates to the list
     
     return segments
 ```
@@ -195,6 +214,11 @@ ui = widgets.VBox([
 display(ui)
 ```
 
+Below is an image showing how the UI looks like:
+
+<p align="center">
+  <img src="https://github.com/EN555/EN555.github.io/blob/main/images/UI.JPG" alt="Image 006" />
+</p>
 
 ## Results
 
