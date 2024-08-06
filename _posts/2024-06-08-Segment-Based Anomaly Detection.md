@@ -1,4 +1,4 @@
-# Segment-Based Anomaly Detection for Greater Accuracy
+# Segment-Based Anomaly Detection
 
 
 In today's data-driven world, the ability to automatically detect and localize anomalies in images is crucial across a wide range of applications. Traditionally, anomaly detection has focused on identifying differences between entire images. However, a more granular approach that detects anomalies within segments of the same image can provide even greater value and insights. Here's why this localized approach to anomaly detection is so important:
