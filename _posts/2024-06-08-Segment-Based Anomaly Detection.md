@@ -11,16 +11,13 @@ In today's data-driven world, the ability to automatically detect and localize a
 
 **In this work, we focus on segment-level anomaly detection. By analyzing smaller regions within an image, we can pinpoint anomalies that might be overlooked when considering the entire image.**
 
-By leveraging the capabilities of the Fastdup library, we aim to enhance the capability of anomaly detection systems to operate at a finer granularity, delivering better insights and outcomes across various domains.
+By leveraging the capabilities of the Fastdup library, we aim to enhance the capability of anomaly detection systems to operate at a finer granularity, delivering better insights and outcomes.
 
 ---
 
 ### Dataset
 
-We conduct the experiments on the MVTec Anomaly Detection benchmark, that is, a famous dataset in the anomaly detection and localization field. MVTec AD
-contains 5 texture and 10 object categories stemming from manufacturing with a total of 5354 images. The dataset
-is composed of normal images for training and both normal and anomaly images with various types of defect for
-test. It also provides pixel-level annotations for defective test images.
+We conducted the experiments on the MVTec Anomaly Detection benchmark, a renowned dataset in the anomaly detection and localization field. MVTec AD contains 10 object categories from manufacturing with a total of 5354 images. The dataset is composed of normal images for training and both normal and anomaly images with various types of defects for testing. It also provides pixel-level annotations for defective test images.
 
 <p align="center">
   <img src="https://github.com/EN555/EN555.github.io/raw/main/images/006.png" alt="Image 006" width="200" />
@@ -28,7 +25,7 @@ test. It also provides pixel-level annotations for defective test images.
   <img src="https://github.com/EN555/EN555.github.io/raw/main/images/263.png" alt="Image 263" width="200" />
 </p>
 
-In this dataset they too proveide defective images.
+The dataset also includes images with defects.
 
 <p align="center">
   <img src="https://github.com/EN555/EN555.github.io/raw/main/images/007.png" alt="Image 007" width="200" />
@@ -36,13 +33,9 @@ In this dataset they too proveide defective images.
   <img src="https://github.com/EN555/EN555.github.io/raw/main/images/016.png" alt="Image 016" width="200" />
 </p>
 
----
+**The last three images are examples of defective images.**
 
-<p align="center">
-  <img src="https://github.com/EN555/EN555.github.io/raw/main/images/007-defect.png" alt="Image 007" width="200" />
-  <img src="https://github.com/EN555/EN555.github.io/raw/main/images/024-defect.png" alt="Image 024" width="200" />
-  <img src="https://github.com/EN555/EN555.github.io/raw/main/images/016-defect.png" alt="Image 016" width="200" />
-</p>
+---
 
 
 #### Some T-SQL Code
@@ -65,3 +58,18 @@ ForEach ($thing in $things) {
     Write-Output "It highlights it using the GitHub style"
 }
 ```
+
+<div style="display: flex; justify-content: center;">
+  <div style="margin-right: 20px; text-align: center;">
+    <p><b>Original Images</b></p>
+    <img src="https://github.com/EN555/EN555.github.io/raw/main/images/007.png" alt="Image 007" width="200" />
+    <img src="https://github.com/EN555/EN555.github.io/raw/main/images/024.png" alt="Image 024" width="200" />
+    <img src="https://github.com/EN555/EN555.github.io/raw/main/images/016.png" alt="Image 016" width="200" />
+  </div>
+  <div style="text-align: center;">
+    <p><b>Images Highlighting Detected Anomalies</b></p>
+    <img src="https://github.com/EN555/EN555.github.io/raw/main/images/007-defect.png" alt="Image 007 Defect" width="200" />
+    <img src="https://github.com/EN555/EN555.github.io/raw/main/images/024-defect.png" alt="Image 024 Defect" width="200" />
+    <img src="https://github.com/EN555/EN555.github.io/raw/main/images/016-defect.png" alt="Image 016 Defect" width="200" />
+  </div>
+</div>
