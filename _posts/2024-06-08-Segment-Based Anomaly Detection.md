@@ -40,7 +40,37 @@ The dataset also includes images with defects.
 ## Code
 Below are the main parts of the code used in our segment-level anomaly detection system.
 
+#### Setting Up the Environment
+
+We start by importing the necessary libraries.
+
+```pyhton
+import os
+import shutil
+import ipywidgets as widgets
+from IPython.display import display, Image, HTML
+from PIL import Image as PILImage, ImageDraw
+from io import BytesIO
+import fastdup
+import sys
+import contextlib
+```
+
+#### Creating Interactive Widgets
+
+```pyhton
+# Create widgets
+title = widgets.HTML(value="<h2 style='color: #2E86C1;'>Image Outlier Detection</h2>")
+description = widgets.HTML(value="<p style='font-size: 16px;'>You can load an image with an outlier, and the model will return the segment with the outlier:</p>")
+file_upload = widgets.FileUpload(accept='image/*', multiple=False, style={'description_width': 'initial'})
+num_parts = widgets.IntSlider(value=7, min=1, max=10, step=1, description='Num Parts:', style={'description_width': 'initial'})
+output = widgets.Output()
+loading_message = widgets.Label(value="")
+```
+
 #### Segmenting the Image
+
+We define a function to divide the uploaded image into segments. This function calculates the dimensions of each segment and returns both the segments and their coordinates.
 
 ```pyhton
 # Function to divide an image into a specified number of parts and return segments with coordinates
@@ -71,19 +101,84 @@ def divide_image_with_coordinates(image, num_parts):
     return segments
 ```
 
-#### Run Fastdup
+#### Handling File Uploads and Processing
+
+The `on_file_upload` function processes the uploaded image. It segments the image, saves the segments to a temporary directory, runs Fastdup to detect outliers, and draws rectangles around the outliers on the original image.
 
 ```python
-# Function to run Fastdup on segmented images
-def run_fastdup_on_segments(temp_dir):
-    # Run fastdup to detect outliers with suppressed output
-    with contextlib.redirect_stdout(open(os.devnull, 'w')), contextlib.redirect_stderr(open(os.devnull, 'w')):
-        fd = fastdup.create(input_dir=temp_dir)
-        fd.run(overwrite=True)
-    
-    # Get the outliers
-    outliers_df = fd.outliers()
-    return outliers_df
+# Define file upload event handler
+def on_file_upload(change):
+    with output:
+        output.clear_output()
+        loading_message.value = "Processing the image, please wait..."
+        display(loading_message)
+        
+        for name, file_info in file_upload.value.items():
+            # Display the uploaded image
+            img = PILImage.open(BytesIO(file_info['content']))
+            
+            # Segment the image
+            segments_with_coords = divide_image_with_coordinates(img, num_parts.value)
+            
+            # Create a temporary directory to save segments
+            temp_dir = '/content/drive/MyDrive/Colab Notebooks/temp_segments'
+            if os.path.exists(temp_dir):
+                shutil.rmtree(temp_dir)
+            os.makedirs(temp_dir)
+            
+            # Save segments to temporary directory
+            segment_files = []
+            for i, (segment, (left, upper, right, lower)) in enumerate(segments_with_coords):
+                segment_file = os.path.join(temp_dir, f"segment_{i}.png")
+                segment.save(segment_file)
+                segment_files.append(segment_file)
+            
+            # Run fastdup to detect outliers with suppressed output
+            with contextlib.redirect_stdout(open(os.devnull, 'w')), contextlib.redirect_stderr(open(os.devnull, 'w')):
+                fd = fastdup.create(input_dir=temp_dir)
+                fd.run(overwrite=True)
+            
+            # Get the outliers
+            outliers_df = fd.outliers()
+            outlier_files = set(outliers_df['filename_outlier'].values) if not outliers_df.empty else set()
+
+            # Draw rectangles around outliers on the original image
+            draw = ImageDraw.Draw(img)
+            for i, (segment, (left, upper, right, lower)) in enumerate(segments_with_coords):
+                segment_file = f"segment_{i}.png"
+                for outlier_file in outlier_files:
+                    if segment_file in outlier_file:
+                        draw.rectangle([left, upper, right, lower], outline="red", width=5)
+                        print(f"Outlier detected: {segment_file}")  # Debug: Print if the segment is an outlier
+            
+            # Remove the loading message
+            loading_message.value = ""
+            
+            # Display the original image with outliers highlighted
+            img_display_with_outliers = BytesIO()
+            img.save(img_display_with_outliers, format='PNG')
+            display(Image(data=img_display_with_outliers.getvalue()))
+```
+
+#### Displaying the User Interface
+
+Finally, we arrange all the widgets in a vertical box layout and display them.
+
+
+```python
+file_upload.observe(on_file_upload, names='value')
+
+# Arrange widgets in a layout
+ui = widgets.VBox([
+    title,
+    description,
+    num_parts,
+    file_upload,
+    output
+])
+
+# Display the UI
+display(ui)
 ```
 
 ## Results
@@ -105,5 +200,9 @@ We selected a few defective images from the MVTec Anomaly Detection benchmark da
   </div>
 </div>
 
-### How to use?
+### Conclusion
+
+In this blog post, we demonstrated how to implement a segment-level anomaly detection system using Python and Jupyter Notebook. By leveraging interactive widgets, image processing libraries, and the Fastdup library, we created a tool that can efficiently detect and localize anomalies within images.
+
+
 
