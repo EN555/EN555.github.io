@@ -3,11 +3,15 @@
 
 In today's data-driven world, the ability to automatically detect and localize anomalies in images is crucial across a wide range of applications. Traditionally, anomaly detection has focused on identifying differences between entire images. However, a more granular approach that detects anomalies within segments of the same image can provide even greater value and insights. Here's why this localized approach to anomaly detection is so important:
 
-### Quality Control in Manufacturing
-In manufacturing, ensuring the quality of products is paramount. Anomalies such as defects in materials or assembly errors can lead to product failures, costly recalls, and damage to a brand's reputation. While classic anomaly detection can identify defective products by comparing entire images, it often misses subtle defects that only affect small areas of the product. Localized anomaly detection within segments of an image allows for the identification of minor defects that might otherwise go unnoticed, ensuring a higher level of quality control and reducing waste.
+1. **Quality Control in Manufacturing:** Ensuring product quality is crucial. Classic anomaly detection might miss small defects. Segment-level detection identifies minor issues, enhancing quality control and reducing waste.
 
-### Medical Imaging
-In healthcare, early detection of anomalies in medical images can save lives. For instance, identifying unusual patterns in X-rays, MRIs, or CT scans can help diagnose diseases such as cancer at an early stage. Traditional methods compare entire scans to detect anomalies, but this approach can miss small, yet critical, abnormalities. By dividing images into segments and analyzing each part individually, localized anomaly detection can highlight suspicious areas with greater precision, aiding radiologists in making more accurate diagnoses and improving patient outcomes.
+2. **Medical Imaging:** Early detection of anomalies in medical images can save lives. Segment-level detection highlights small abnormalities in X-rays, MRIs, or CT scans, aiding accurate diagnoses and improving patient outcomes.
+
+---
+
+**In this work, we focus on segment-level anomaly detection. By analyzing smaller regions within an image, we can pinpoint anomalies that might be overlooked when considering the entire image.**
+
+By leveraging the capabilities of the <img src="https://github.com/EN555/EN555.github.io/blob/main/images/visual_layer.png" alt="Fastdup Icon" width="50" height="50"> Fastdup library, we aim to enhance the capability of anomaly detection systems to operate at a finer granularity, delivering better insights and outcomes across various domains.
 
 ---
 
