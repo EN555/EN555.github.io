@@ -55,7 +55,7 @@ In this project, we utilize a segment-level anomaly detection approach to identi
    - Once the outliers are detected, the original image is revisited, and rectangles are drawn around the segments identified as anomalies. This visual representation helps in easily locating the problematic areas within the image.
 
 ## Implementation
-Below are the main parts of the code used in our segment-level anomaly detection system.
+Below are the parts of the code used in our segment-level anomaly detection system.
 
 #### Setting Up the Environment
 
