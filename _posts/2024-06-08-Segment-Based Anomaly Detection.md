@@ -41,7 +41,7 @@ The dataset also includes images with defects.
 In this project, we utilize a segment-level anomaly detection approach to identify outliers within an image. The method involves several key steps:
 
 1. **Image Segmentation**: 
-   - The uploaded image is divided into smaller segments based on the specified number of parts. Here, "parts" refers to the grid divisions of the image; for example, if the image is divided into 4 parts, it will be split into a 2x2 grid. The number of parts can be adjusted according to the desired granularity of the segmentation.
+   - The uploaded image is divided into smaller segments based on the specified number of parts. Here, "parts" refers to the grid divisions of the image; for example, if the image is divided into 4 parts, it will be split into a 4x4 grid. The number of parts can be adjusted according to the desired granularity of the segmentation.
    - This segmentation is achieved using a function that calculates the dimensions of each part and crops the image accordingly. By breaking down the image into smaller parts, we can focus on detecting anomalies in localized regions, which is more precise than evaluating the entire image as a whole.
 
 2. **Saving Image Segments**: 
