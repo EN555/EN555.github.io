@@ -217,7 +217,7 @@ display(ui)
 Below is an image showing how the UI looks like:
 
 <p align="center">
-  <img src="https://github.com/EN555/EN555.github.io/blob/main/images/UI.JPG" alt="Image 006" />
+  <img src="https://github.com/EN555/EN555.github.io/blob/main/images/UI.JPG" alt="Image UI" />
 </p>
 
 ## Results
