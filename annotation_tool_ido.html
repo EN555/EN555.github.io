@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Annotation Tool</title>
+    <link href="https://fonts.googleapis.com/css?family=Inter:400,600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-bg: #f4f4f8;
+            --secondary-bg: #ffffff;
+            --primary-text: #2c3e50;
+            --secondary-text: #34495e;
+            --border-color: #e0e4e8;
+            --accent-color: #3498db;
+            --accent-hover: #2980b9;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--primary-text);
+            padding: 20px;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+            font-size: 16px;
+            overflow-y: hidden;
+        }
+
+        #whQuestion,
+        .nested-box input[type="text"] {
+            width: 100%;
+            max-width: 600px;
+            font-size: 16px;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        .yes-no-question-input,
+        .yes-answers-input,
+        .no-answers-input {
+            width: 100%;
+            max-width: 600px;
+            font-size: 16px;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        #container {
+            display: flex;
+            height: calc(100vh - 40px);
+            gap: 20px;
+            overflow-x: hidden;
+        }
+
+        #leftPanel {
+            position: sticky;
+            top: 0;
+            max-height: 100vh;
+            overflow-y: auto;
+            flex: 1;
+            background-color: var(--secondary-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 10px 15px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border-spacing: 0;
+            margin-bottom: 10px;
+        }
+
+        th,
+        td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: var(--secondary-text);
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        input[type="file"] {
+            margin-bottom: 10px;
+        }
+
+        button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+            margin-bottom: 8px;
+        }
+
+        button:hover {
+            background-color: var(--accent-hover);
+        }
+
+        #annotationArea {
+            flex: 1;
+            background-color: var(--secondary-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        textarea {
+            flex-grow: 1;
+            width: 100%;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px;
+            resize: none;
+            font-family: inherit;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        #actionContainer {
+            margin-top: 10px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #progressBarContainer {
+            width: 100%;
+            background-color: #ddd;
+            padding: 3px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        #progressBar {
+            width: 1%;
+            height: 20px;
+            background-color: var(--accent-color);
+            border-radius: 3px;
+            transition: width 0.4s ease;
+        }
+
+        #data-table td,
+        #data-table th {
+            font-size: 18px;
+            padding: 16px;
+            line-height: 1.8;
+        }
+
+        #progressText {
+            position: absolute;
+            text-align: center;
+            line-height: 20px;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        #jsonWarning {
+            color: red;
+            display: none;
+            margin-top: 5px;
+        }
+
+        .input-group,
+        .input-box,
+        .nested-box {
+            margin-bottom: 20px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--secondary-bg);
+            border-radius: 8px;
+            border: 4px solid var(--border-color);
+        }
+
+        button.active {
+            background-color: red;
+            color: white;
+        }
+        button.inactive {
+            background-color: #3498db;
+            color: white;
+        }
+
+        #answerButtonContainer {
+            margin-top: 15px;
+        }
+
+        #addAnswerButton {
+            margin-bottom: 10px;
+        }
+
+        fieldset {
+            border-radius: 8px;
+        }
+
+        .answer-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .answer-field {
+            flex-grow: 1;
+        }
+
+        legend {
+            font-weight: bold;
+            padding: 0 10px;
+        }
+
+        .nested-box {
+            background-color: var(--primary-bg);
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        .remove-button {
+            padding: 2px 10px;
+            margin-left: 10px;
+            font-size: 12px;
+            color: white;
+            background-color: red;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            align-self: flex-start;
+            transition: background-color 0.3s ease;
+        }
+
+        .remove-button:hover {
+            background-color: darkred;
+        }
+        tr.selected {
+            background-color: #e0e0e0; /* Light gray background for selected row */
+        }
+
+        thead th {
+            top: 0;
+            background-color: #f8f9fa;
+            z-index: 10;
+        }
+
+        label {
+            display: block; /* Display labels on their own line for better readability */
+            margin-bottom: 5px;
+            font-weight: 600; /* Make labels slightly bolder */
+            color: var(--secondary-text)
+        }
+tr.selected {
+    background-color: transparent; /* Change from grey to transparent or another color */
+}
+        .legend-container {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .legend-box {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .conflict {
+            background-color: red;
+            color:white;
+        }
+        .no-conflict {
+            background-color: #3498db;
+            color:white;
+        }
+.button.active, .button.inactive {
+    background-color: #3498db; /* Adjust colors as needed */
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    margin-right: 5px; /* Add space to the right of each button */
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.button.active {
+    background-color: red; /* Active color */
+}
+
+.button.inactive {
+    background-color: #3498db; /* Inactive color */
+}
+
+.button:hover {
+    opacity: 0.8; /* Optional: style for hover effect */
+}
+    </style>
+</head>
+
+<body>
+    <div id="progressBarContainer">
+        <div id="progressBar"></div>
+        <div id="progressText">0 of 0 Annotated</div>
+    </div>
+    <div id="container">
+        <div id="leftPanel">
+            <div class="panel-header">
+                Conflict Annotations
+                <div>
+                    <button onclick="previousRecord()">❮ Previous</button>
+                    <button onclick="nextRecord()">Next ❯</button>
+                </div>
+            </div>
+            <input type="file" id="csvFileInput" accept=".csv" onchange="loadData()">
+            <div style="overflow-y: auto;">
+                <table id="data-table">
+                    <thead>
+                        <tr>
+                            <th>Claim and Evidences (Supports & Refutes & Neutral) 🔍</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+                <div style="overflow-y: auto;">
+                <table id="response-table">
+                    <thead>
+                        <tr>
+                            <th>O1 Response 🤖</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="annotationArea">
+            <div id="topBar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div id="instanceIndicator" style="font-size: 20px;">
+                    Instance <span id="currentInstance">0</span> of <span id="totalInstances">0</span>
+                </div>
+                <div id="actionContainer">
+                    <input type="checkbox" id="finishedEditing" onChange="toggleFinished(this.checked)">
+                    <label for="finishedEditing">Finished Editing</label>
+                    <button onclick="downloadCSV()">📥 Export CSV</button>
+                </div>
+            </div>
+            <div id="finishedIndicator" style="display: none; text-align: center; margin-bottom: 10px;">
+                <span style="color: green; font-size: 30px;">✔ Finished</span>
+            </div>
+            <h3>Annotation Editor 📝</h3>
+
+            <div class="input-group">
+                <label for="isContradiction">Is Contradiction:</label>
+                <select id="isContradiction">
+                    <option value="">Select...</option>
+                    <option value="true">True</option>
+                    <option value="false">False</option>
+                    <option value="uncertain">Uncertain</option>
+                </select>
+            </div>
+            <fieldset class="input-box">
+                <legend>WH-Question</legend>
+                    <select id="whQuestionType">
+        <option value="">Select Type...</option>
+        <option value="function">Function Question</option>
+        <option value="list">List Question</option>
+    </select>
+                <label for="whQuestion">Question:</label>
+                <input type="text" id="whQuestion" placeholder="Enter WH-question">
+                <div id="answerContainers"></div>
+                <div class="legend-container">
+                    <span class="legend-box conflict">Conflict</span>
+                    <span class="legend-box no-conflict">Conflict-Free</span>
+                </div>
+                <button type="button" onclick="addAnswer()">+ Add Answer</button>
+            </fieldset>
+           <fieldset class="input-box">
+                <legend>Yes/No Questions</legend>
+                <div id="yesNoQuestionContainers"></div>
+                <button type="button" onclick="addYesNoQuestion()">+ Add Yes/No Question</button>
+            </fieldset>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script>
+        let currentData = [];
+        let currentIndex = 0;
+        let answerCount = 0;
+        let activeAnswers = 0;
+
+        function serializeAnnotations() {
+            const annotations = {
+                isContradiction: document.getElementById('isContradiction').value,
+                whQuestionType: document.getElementById('whQuestionType').value,
+                whQuestion: document.getElementById('whQuestion').value,
+                whAnswers: [],
+                yesNoQuestions: [],
+                buttonStates: {}
+
+            };
+
+            // Serialize WH Answers
+            const answerBoxes = document.querySelectorAll('#answerContainers .nested-box');
+            answerBoxes.forEach(box => {
+                const answerInput = box.querySelector('input[type="text"]');
+                const evidenceInput = box.querySelector('input[type="text"][placeholder*="Evidence"]');
+                annotations.whAnswers.push({
+                    answer: answerInput ? answerInput.value : '',
+                    evidenceNumbers: evidenceInput ? evidenceInput.value.split(',').map(e => e.trim()) : []
+                });
+            });
+
+            // Serialize Yes/No Questions
+            const yesNoContainers = document.querySelectorAll('#yesNoQuestionContainers .yes-no-question-box');
+            yesNoContainers.forEach(container => {
+                const questionInput = container.querySelector('.yes-no-question-input');
+                const yesAnswersInput = container.querySelector('.yes-answers-input');
+                const noAnswersInput = container.querySelector('.no-answers-input');
+                annotations.yesNoQuestions.push({
+                    question: questionInput ? questionInput.value : '',
+                    yesAnswers: yesAnswersInput ? yesAnswersInput.value.split(',').map(e => e.trim()) : [],
+                    noAnswers: noAnswersInput ? noAnswersInput.value.split(',').map(e => e.trim()) : []
+                });
+            });
+
+            const buttonContainer = document.getElementById('answerButtonContainer');
+            if (buttonContainer) {
+                const buttons = buttonContainer.querySelectorAll('button');
+                buttons.forEach(button => {
+                    annotations.buttonStates[button.id] = button.classList.contains('active');
+                });
+            }
+
+
+            return JSON.stringify(annotations);
+        }
+
+
+
+
+
+function deserializeAnnotations(json) {
+    const annotations = JSON.parse(json);
+
+    // Check and set the question type; if absent, default to an empty string
+    if (annotations.whQuestionType) {
+        document.getElementById('whQuestionType').value = annotations.whQuestionType;
+    } else {
+        document.getElementById('whQuestionType').value = '';  // Set a default value if not present
+    }
+
+    // Set other fields
+    document.getElementById('isContradiction').value = annotations.isContradiction || '';
+    document.getElementById('whQuestion').value = annotations.whQuestion || '';
+
+    // Clear and restore WH Answers
+    document.getElementById('answerContainers').innerHTML = '';
+    const whAnswers = annotations.whAnswers;
+    whAnswers.forEach(answer => {
+        addAnswer(); // Add new answer dynamically
+        const lastAnswerBox = document.querySelector('#answerContainers .nested-box:last-child');
+        if (lastAnswerBox) {
+            const answerInput = lastAnswerBox.querySelector('input[type="text"]');
+            const evidenceInput = lastAnswerBox.querySelector('input[type="text"][placeholder*="Evidence"]');
+            if (answerInput) answerInput.value = answer.answer;
+            if (evidenceInput) evidenceInput.value = answer.evidenceNumbers.join(', ');
+        }
+    });
+
+    // Clear and restore Yes/No Questions
+    document.getElementById('yesNoQuestionContainers').innerHTML = '';
+    annotations.yesNoQuestions.forEach(question => {
+        addYesNoQuestion(); // Add new Yes/No question dynamically
+        const lastQuestionBox = document.querySelector('#yesNoQuestionContainers .yes-no-question-box:last-child');
+        if (lastQuestionBox) {
+            const questionInput = lastQuestionBox.querySelector('.yes-no-question-input');
+            const yesAnswersInput = lastQuestionBox.querySelector('.yes-answers-input');
+            const noAnswersInput = lastQuestionBox.querySelector('.no-answers-input');
+            if (questionInput) questionInput.value = question.question;
+            if (yesAnswersInput) yesAnswersInput.value = question.yesAnswers.join(', ');
+            if (noAnswersInput) noAnswersInput.value = question.noAnswers.join(', ');
+        }
+    });
+
+        // Update button states after all answers are added
+    updateAnswerButtons(); // Ensure the button containers are updated
+    if (annotations.buttonStates) {
+        for (const buttonId in annotations.buttonStates) {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                button.classList.remove('inactive', 'active'); // Clear existing states
+                button.classList.add(annotations.buttonStates[buttonId] ? 'active' : 'inactive');
+            }
+        }
+    }
+}
+
+
+        function addYesNoQuestion() {
+            const container = document.getElementById('yesNoQuestionContainers');
+
+            // Create a new fieldset for the Yes/No question
+            const questionBox = document.createElement('fieldset');
+            questionBox.className = 'yes-no-question-box input-box';
+
+            // Get the current number of questions
+            const questionNumber = container.children.length + 1;
+
+            // Add the question HTML with dynamic numbering
+            questionBox.innerHTML = `
+                <legend>Yes/No Question ${questionNumber}</legend>
+                <div class="answer-container">
+                    <div class="answer-field">
+                        <label>Question:</label>
+                        <input type="text" class="yes-no-question-input" placeholder="Enter Yes/No question">
+                    </div>
+                    <button type="button" class="remove-button" onclick="removeYesNoQuestion(this)">X</button>
+                </div>
+                <div>
+                    <label>Yes Answers:</label>
+                    <input type="text" class="yes-answers-input" placeholder="Number of Yes answers">
+                </div>
+                <div>
+                    <label>No Answers:</label>
+                    <input type="text" class="no-answers-input" placeholder="Number of No answers">
+                </div>
+            `;
+
+            // Append the question box to the container
+            container.appendChild(questionBox);
+
+            // Save annotations after adding a new question
+            saveAnnotations();
+        }
+
+
+        function removeYesNoQuestion(button) {
+            const container = document.getElementById('yesNoQuestionContainers');
+            const questionBox = button.closest('.yes-no-question-box');
+
+            if (questionBox) {
+                // Remove the question box from the DOM
+                container.removeChild(questionBox);
+
+                // Update numbering of remaining questions
+                updateYesNoQuestionNumbers();
+
+                // Save annotations after removal
+                saveAnnotations();
+            }
+        }
+
+        function updateYesNoQuestionNumbers() {
+            const container = document.getElementById('yesNoQuestionContainers');
+            const questionBoxes = container.querySelectorAll('.yes-no-question-box');
+
+            // Update the legend for each question box
+            questionBoxes.forEach((box, index) => {
+                const legend = box.querySelector('legend');
+                legend.textContent = `Yes/No Question ${index + 1}`;
+            });
+        }
+
+
+        function addAnswer() {
+            answerCount++;
+            activeAnswers++;
+            const container = document.getElementById('answerContainers');
+            const answerBox = document.createElement('fieldset');
+            answerBox.className = 'nested-box';
+            answerBox.id = 'answerBox' + answerCount;
+
+            answerBox.innerHTML = `
+                <legend>Answer ${activeAnswers}</legend>
+                <div class="answer-container">
+                    <div class="answer-field">
+                        <label for="whAnswer${answerCount}">Answer:</label>
+                        <input type="text" id="whAnswer${answerCount}" placeholder="Answer ${activeAnswers}">
+                    </div>
+                    <button type="button" class="remove-button" onclick="removeAnswer(${answerCount})">X</button>
+                </div>
+                <label for="whEvidence${answerCount}">Evidence Numbers:</label>
+                <input type="text" id="whEvidence${answerCount}" placeholder="Evidence numbers for Answer ${activeAnswers}">`;
+
+            container.appendChild(answerBox);
+            updateAnswerButtons();
+        }
+
+function updateAnswerButtons() {
+    const container = document.getElementById('answerContainers');
+    const answers = container.querySelectorAll('.nested-box');
+    const buttonContainer = document.getElementById('answerButtonContainer');
+    if (!buttonContainer) {
+        container.insertAdjacentHTML('afterend', '<div id="answerButtonContainer" style="margin-top: 10px;"></div>');
+    } else {
+        buttonContainer.innerHTML = ''; // Clear existing buttons before adding new ones.
+    }
+
+    for (let i = 0; i < answers.length; i++) {
+        for (let j = i + 1; j < answers.length; j++) {
+            const buttonId = `btn${i + 1}-${j + 1}`;
+            const buttonClass = 'button inactive'; // Default class
+            buttonContainer.insertAdjacentHTML('beforeend', `<button id="${buttonId}" onclick="toggleButtonColor('${buttonId}')" class="${buttonClass}">(${i + 1},${j + 1})</button>`);
+        }
+    }
+}
+
+
+
+function toggleButtonColor(buttonId) {
+    const button = document.getElementById(buttonId);
+    if (button) {
+        if (button.classList.contains('inactive')) {
+            button.classList.remove('inactive');
+            button.classList.add('active');
+        } else {
+            button.classList.remove('active');
+            button.classList.add('inactive');
+        }
+    }
+    saveAnnotations(); // Save state whenever a button is toggled
+}
+
+
+        function removeAnswer(answerId) {
+            const answerBox = document.getElementById('answerBox' + answerId);
+            if (answerBox) {
+                answerBox.parentNode.removeChild(answerBox);
+                activeAnswers--;
+                updateAnswerNumbers();
+                updateAnswerButtons(); // Refresh buttons when an answer is removed
+            }
+        }
+
+        function updateAnswerNumbers() {
+            const answerBoxes = document.querySelectorAll('#answerContainers .nested-box');
+            let newAnswerNumber = 1;
+
+            answerBoxes.forEach(box => {
+                // Update the legend text
+                box.querySelector('legend').textContent = 'Answer ' + newAnswerNumber;
+
+                // Update the placeholders for answer input
+                const answerInput = box.querySelector(`#whAnswer${box.id.replace('answerBox', '')}`);
+                if (answerInput) {
+                    answerInput.placeholder = `Answer ${newAnswerNumber}`;
+                }
+
+                // Update the placeholders for evidence input
+                const evidenceInput = box.querySelector(`#whEvidence${box.id.replace('answerBox', '')}`);
+                if (evidenceInput) {
+                    evidenceInput.placeholder = `Evidence numbers for Answer ${newAnswerNumber}`;
+                }
+
+                newAnswerNumber++;
+            });
+        }
+
+function loadData() {
+    const file = document.getElementById('csvFileInput').files[0];
+    if (file) {
+        Papa.parse(file, {
+            header: true,
+            skipEmptyLines: true,
+            complete: function (results) {
+                currentData = results.data;
+
+                // Initialize 'is_finished' field if not present, and ensure it's a boolean
+                currentData.forEach(row => {
+                    if (!row.hasOwnProperty('is_finished')) {
+                         row.is_finished = false; // Default to false if missing
+                    } else {
+                    row.is_finished = /^(true|TRUE|1)$/i.test(row.is_finished);
+                    }
+                 });
+                console.log(currentData)
+                // Update the progress bar based on loaded data
+                updateProgressBar();
+
+                // Display the first record
+                currentIndex = 0;
+                displayRecord(currentIndex);
+            }
+        });
+    }
+}
+
+
+function displayRecord(index) {
+    if (index < 0 || index >= currentData.length) return;
+
+    // Set instance number
+    document.getElementById('currentInstance').textContent = index + 1;
+    document.getElementById('totalInstances').textContent = currentData.length;
+
+    // Reset answer counters when a new record is displayed
+    answerCount = 0;
+    activeAnswers = 0;
+    document.getElementById('answerContainers').innerHTML = ''; // Clear previous answers
+
+    // Remove class selected from previous table row selection
+    const selectedRow = document.querySelector('#data-table tbody tr.selected');
+    if (selectedRow) {
+        selectedRow.classList.remove('selected');
+    }
+
+
+    const dataRow = currentData[index];
+    let claimEvidencesFormatted = dataRow.claim_evidences || 'No claim evidence';
+    claimEvidencesFormatted = claimEvidencesFormatted.replace(/\b(claim|Supports|Refutes|Neutral):/g, '<span class="bold">$1:</span>');
+    document.querySelector('#data-table tbody').innerHTML = `
+        <tr>
+            <td onclick="selectTableRow(this)"><div style="white-space: pre-wrap;">${claimEvidencesFormatted}</div></td>
+        </tr>`;
+    document.querySelector('#response-table tbody').innerHTML = `
+        <tr>
+            <td><div style="white-space: pre-wrap;">${dataRow.o1_response || 'No response'}</div></td>
+        </tr>`;
+
+    // Update the Finished Editing checkbox
+     const isFinished = dataRow.is_finished === true;
+    document.getElementById('finishedEditing').checked = isFinished;
+    document.getElementById('finishedIndicator').style.display = isFinished ? 'block' : 'none';
+
+    // Handle annotations if present
+    if (dataRow.Annotator_output) {
+        deserializeAnnotations(dataRow.Annotator_output);
+    } else {
+        // Reset fields if no annotations are available
+        document.getElementById('isContradiction').value = '';
+        document.getElementById('whQuestion').value = '';
+        document.getElementById('yesNoQuestionContainers').innerHTML = ''; // Clear Yes/No questions
+
+    }
+        //set row to selected
+        const currentRow = document.querySelector('#data-table tbody tr:nth-child(' + (index+1) + ')');
+        if (currentRow) {
+            currentRow.classList.add('selected');
+        }
+}
+
+
+
+
+    function selectTableRow(element) {
+        const selectedRow = document.querySelector('tr.selected');
+    if (selectedRow) {
+        selectedRow.classList.remove('selected');
+    }
+    element.parentNode.classList.add('selected');
+
+}
+
+
+        function saveAnnotations() {
+            if (currentData[currentIndex]) {
+                currentData[currentIndex].Annotator_output = serializeAnnotations();
+                 currentData[currentIndex].is_finished = document.getElementById('finishedEditing').checked;
+
+                updateProgressBar();
+            }
+        }
+
+        function toggleFinished(isChecked) {
+            if (currentData[currentIndex]) {
+               currentData[currentIndex].is_finished = isChecked;
+
+
+                // Toggle the Finished Indicator
+                const finishedIndicator = document.getElementById('finishedIndicator');
+                if (isChecked) {
+                    finishedIndicator.style.display = 'block';
+                } else {
+                    finishedIndicator.style.display = 'none';
+                }
+
+                updateProgressBar();
+            }
+        }
+
+
+        function nextRecord() {
+            saveAnnotations(); // Save current record
+            if (currentIndex < currentData.length - 1) {
+                currentIndex++;
+                displayRecord(currentIndex);
+            }
+        }
+
+        function previousRecord() {
+            saveAnnotations(); // Save current record
+            if (currentIndex > 0) {
+                currentIndex--;
+                displayRecord(currentIndex);
+            }
+        }
+
+
+
+        function downloadCSV() {
+            saveAnnotations(); // Save the latest annotations
+            const csv = Papa.unparse(currentData);
+            const blob = new Blob([csv], {
+                type: 'text/csv'
+            });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `annotations_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+       function updateProgressBar() {
+            if (!currentData) return; // Exit if no data loaded
+            const completed = currentData.filter(d => d.is_finished === true).length;
+            const total = currentData.length;
+            const percentage = total > 0 ? (completed / total) * 100 : 0;
+            document.getElementById('progressBar').style.width = percentage + '%';
+            document.getElementById('progressText').textContent = `${completed} of ${total} Annotated`;
+        }
+
+        window.onload = function () {
+            // Pre-load functionality if needed
+        };
+    </script>
+</body>
+
+</html>
