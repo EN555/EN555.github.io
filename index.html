@@ -364,7 +364,7 @@ tr.selected {
                 <table id="response-table">
                     <thead>
                         <tr>
-                            <th>O1 Response 🤖</th>
+                            <th>GPT Response 🤖</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -399,11 +399,21 @@ tr.selected {
             </div>
             <fieldset class="input-box">
                 <legend>WH-Question</legend>
+                                <label for="whQuestionType">Question Type:</label>
+
                     <select id="whQuestionType">
         <option value="">Select Type...</option>
         <option value="function">Function Question</option>
         <option value="list">List Question</option>
     </select>
+                <label for="whConflictType">Conflict Type:</label>
+<select id="whConflictType">
+    <option value="">Select Conflict Type...</option>
+    <option value="presupposition">Presupposition</option>
+    <option value="multiple_answer">Multiple Answer</option>
+    <option value="negation">Negation</option>
+</select>
+
                 <label for="whQuestion">Question:</label>
                 <input type="text" id="whQuestion" placeholder="Enter WH-question">
                 <div id="answerContainers"></div>
@@ -432,6 +442,7 @@ tr.selected {
                 isContradiction: document.getElementById('isContradiction').value,
                 whQuestionType: document.getElementById('whQuestionType').value,
                 whQuestion: document.getElementById('whQuestion').value,
+                whConflictType: document.getElementById('whConflictType').value,
                 whAnswers: [],
                 yesNoQuestions: [],
                 buttonStates: {}
@@ -491,6 +502,7 @@ function deserializeAnnotations(json) {
     // Set other fields
     document.getElementById('isContradiction').value = annotations.isContradiction || '';
     document.getElementById('whQuestion').value = annotations.whQuestion || '';
+    document.getElementById('whConflictType').value = annotations.whConflictType || ''; // Load Conflict Type
 
     // Clear and restore WH Answers
     document.getElementById('answerContainers').innerHTML = '';
