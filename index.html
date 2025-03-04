@@ -406,13 +406,13 @@ tr.selected {
         <option value="function">Function Question</option>
         <option value="list">List Question</option>
     </select>
-                <label for="whConflictType">Conflict Type:</label>
-<select id="whConflictType">
-    <option value="">Select Conflict Type...</option>
-    <option value="presupposition">Presupposition</option>
-    <option value="multiple_answer">Multiple Answer</option>
-    <option value="negation">Negation</option>
+<label for="Is_presupposition">Is Presupposition:</label>
+<select id="Is_presupposition" onchange="saveAnnotations()">
+    <option value="">Select Yes/No ...</option>
+    <option value="yes">Yes</option>
+    <option value="no">No</option>
 </select>
+
 
                 <label for="whQuestion">Question:</label>
                 <input type="text" id="whQuestion" placeholder="Enter WH-question">
@@ -438,16 +438,16 @@ tr.selected {
         let activeAnswers = 0;
 
         function serializeAnnotations() {
-            const annotations = {
-                isContradiction: document.getElementById('isContradiction').value,
-                whQuestionType: document.getElementById('whQuestionType').value,
-                whQuestion: document.getElementById('whQuestion').value,
-                whConflictType: document.getElementById('whConflictType').value,
-                whAnswers: [],
-                yesNoQuestions: [],
-                buttonStates: {}
+const annotations = {
+    isContradiction: document.getElementById('isContradiction').value,
+    whQuestionType: document.getElementById('whQuestionType').value,
+Is_presupposition: document.getElementById('Is_presupposition').value, // Save Is_presupposition
+    whQuestion: document.getElementById('whQuestion').value,
+    whAnswers: [],
+    yesNoQuestions: [],
+    buttonStates: {}
+};
 
-            };
 
             // Serialize WH Answers
             const answerBoxes = document.querySelectorAll('#answerContainers .nested-box');
@@ -493,16 +493,15 @@ function deserializeAnnotations(json) {
     const annotations = JSON.parse(json);
 
     // Check and set the question type; if absent, default to an empty string
-    if (annotations.whQuestionType) {
-        document.getElementById('whQuestionType').value = annotations.whQuestionType;
-    } else {
-        document.getElementById('whQuestionType').value = '';  // Set a default value if not present
-    }
+document.getElementById('whQuestionType').value = annotations.whQuestionType || '';  // Load Question Type
+document.getElementById('Is_presupposition').value = annotations.Is_presupposition || '';  // Load Is_presupposition
+
+
 
     // Set other fields
     document.getElementById('isContradiction').value = annotations.isContradiction || '';
     document.getElementById('whQuestion').value = annotations.whQuestion || '';
-    document.getElementById('whConflictType').value = annotations.whConflictType || ''; // Load Conflict Type
+    document.getElementById('Is_presupposition').value = annotations.Is_presupposition || ''; // Load Conflict Type
 
     // Clear and restore WH Answers
     document.getElementById('answerContainers').innerHTML = '';
